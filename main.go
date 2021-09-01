@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/wevnasc/hermes/email"
+	"github.com/wevnasc/hermes/schedule"
 	"github.com/wevnasc/hermes/server"
 )
 
@@ -25,11 +25,7 @@ func main() {
 func run() error {
 	logger := log.New(os.Stdout, "HTTP: ", log.LstdFlags|log.Lshortfile)
 
-	ctrl := email.NewEmailController(
-		email.NewEmailMemoRepo(),
-		email.NewLocalStorate("templates"),
-	)
-	h := email.NewHandlers(logger, ctrl)
+	h := schedule.NewHandler(logger)
 	mux := http.NewServeMux()
 
 	h.SetupRoutes(mux)

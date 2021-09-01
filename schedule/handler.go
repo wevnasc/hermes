@@ -1,4 +1,4 @@
-package email
+package schedule
 
 import (
 	"encoding/json"
@@ -7,14 +7,15 @@ import (
 	"time"
 
 	"github.com/wevnasc/hermes/server"
+	"github.com/wevnasc/hermes/storage"
 )
 
-type Handlers struct {
+type Handler struct {
 	*server.Middlewares
-	ctrl controller
+	ctrl *controller
 }
 
-func (h *Handlers) scheduleHandler(rw http.ResponseWriter, req *http.Request) {
+func (h *Handler) scheduleHandler(rw http.ResponseWriter, req *http.Request) {
 	type request struct {
 		To          []string `json:"to"`
 		Template    string   `json:"template"`
@@ -51,13 +52,17 @@ func (h *Handlers) scheduleHandler(rw http.ResponseWriter, req *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 }
 
-func (h *Handlers) SetupRoutes(mux *http.ServeMux) {
+func (h *Handler) SetupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/schedules", h.Resource(h.scheduleHandler, []string{http.MethodPost}))
 }
 
-func NewHandlers(logger *log.Logger, controller controller) *Handlers {
-	return &Handlers{
+func NewHandler(logger *log.Logger) *Handler {
+	ctrl := newController(
+		newMemoDB(),
+		storage.NewLocal("templates"),
+	)
+	return &Handler{
 		&server.Middlewares{Log: logger},
-		controller,
+		ctrl,
 	}
 }
